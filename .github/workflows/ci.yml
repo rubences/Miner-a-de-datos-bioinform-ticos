@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Tests unitarios (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ejecutar pytest
+        run: python -m pytest -q
+
+  integracion-real:
+    name: Ejecución real contra RCSB/UniProt/PubChem
+    runs-on: ubuntu-latest
+    needs: tests
+    # Solo bajo demanda: depende de servicios públicos externos y no debe
+    # bloquear la CI habitual por caídas o límites de tasa ajenos al código.
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ejecutar la actividad completa
+        run: python actividad2_resuelta_ruben_juarez.py
+
+      - name: Publicar resultados generados
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-actividad2
+          path: resultados/
+          if-no-files-found: warn
