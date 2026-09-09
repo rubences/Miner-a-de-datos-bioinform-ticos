@@ -1,0 +1,10 @@
+name: mubio07-act2
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas>=2.2
+  - requests>=2.32
+  - biopython>=1.85
+  - rdkit>=2024.09
+  - pytest>=8

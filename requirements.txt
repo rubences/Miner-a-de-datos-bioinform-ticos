@@ -1,0 +1,5 @@
+pandas>=2.2
+requests>=2.32
+biopython>=1.85
+rdkit>=2024.9
+pytest>=8

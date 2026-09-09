@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Entornos
+.venv/
+venv/
+env/
+.env
+.spyproject/
+
+# IDE
+.vscode/
+.idea/
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Datos descargados / resultados reproducibles
+data/pdb/*.cif
+data/pdb/*.part
+resultados/*
+!resultados/.gitkeep
+
+# Logs
+*.log
