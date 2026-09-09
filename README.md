@@ -1,42 +1,55 @@
 # MUBIO07 · Programación en Python · Actividad 2
 
+[![CI](https://github.com/rubences/Miner-a-de-datos-bioinform-ticos/actions/workflows/ci.yml/badge.svg)](https://github.com/rubences/Miner-a-de-datos-bioinform-ticos/actions/workflows/ci.yml)
+
 ## Minería de datos bioinformáticos
 
-Resolución reproducible de la segunda actividad de **Programación en Python**, centrada en minería de datos bioinformáticos mediante servicios públicos y bibliotecas científicas.
+Resolución reproducible de la actividad centrada en **minería de datos bioinformáticos**, integración de API científicas y manipulación de estructuras biomoleculares.
 
-### Tecnologías
+El objetivo del repositorio es doble: cumplir literalmente la rúbrica académica y mantener una implementación técnicamente defendible, reproducible y comprobable.
+
+## Tecnologías y fuentes
 
 - Python 3.11+
 - `requests`
 - `pandas`
-- Biopython (`MMCIFParser`, `MMCIF2Dict`)
+- Biopython: `MMCIFParser` y `MMCIF2Dict`
 - RDKit
-- RCSB Protein Data Bank
-- UniProt REST API / ID Mapping API
-- PubChem PUG REST
+- [RCSB Protein Data Bank](https://www.rcsb.org/)
+- [UniProt REST API](https://rest.uniprot.org/)
+- [PubChem PUG REST](https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest)
 
-## Qué resuelve
+## Cobertura de la actividad
 
-El script `actividad2_resuelta_ruben_juarez.py` implementa los dos bloques de la rúbrica:
+El script principal es **`actividad2_resuelta_ruben_juarez.py`**. Implementa los dos bloques de la rúbrica:
 
-1. **Obtención de información sobre proteínas y compuestos químicos**
-   - Descarga tolerante a fallos de los mmCIF indicados.
-   - PDB `1TUP` → UniProt mediante el ID Mapping oficial.
-   - Extracción de fechas, revisión Swiss-Prot/TrEMBL, gen, sinónimos, organismo, proteína, secuencia y PDB asociados.
-   - Identificación estructurada del cofactor de p53.
-   - Consulta de CID, masa exacta, InChI, InChIKey e IUPAC en PubChem.
+### 1. Obtención de información sobre proteínas y compuestos químicos — 6,5 puntos
 
-2. **Manipulación de datos biológicos**
-   - Parsing de `4OGQ.cif` mediante `MMCIFParser`.
-   - Extracción de `_pdbx_entity_nonpoly` mediante `MMCIF2Dict`.
-   - Obtención de SMILES mediante PubChem.
-   - Generación de un SDF multipropiedad con `Molecular_weight`.
-   - Relectura final del SDF con RDKit para comprobar que todos los registros escritos son objetos `Mol` válidos.
+- Descarga tolerante a fallos de los mmCIF indicados en el enunciado.
+- Control individual de errores: un PDB inexistente o un ID inválido no interrumpe el resto de la ejecución.
+- Mapeo `1TUP` → UniProtKB mediante el servicio oficial de **UniProt ID Mapping**.
+- Extracción de fechas, estado Swiss-Prot/TrEMBL, gen, sinónimos, organismo, nombre de proteína, secuencia y PDB asociados.
+- Identificación del cofactor de p53 a partir del comentario estructurado `COFACTOR` de UniProt.
+- Consulta de CID, masa exacta, InChI, InChIKey e IUPAC mediante PubChem.
+
+### 2. Manipulación de datos biológicos — 3,5 puntos
+
+- Parsing de `4OGQ.cif` mediante `MMCIFParser`.
+- Exclusión explícita de moléculas de agua.
+- Extracción de `_pdbx_entity_nonpoly.name` y `_pdbx_entity_nonpoly.comp_id` mediante `MMCIF2Dict`.
+- Obtención de SMILES de las heteromoléculas mediante PubChem.
+- Generación de un único SDF con la propiedad `Molecular_weight`.
+- Relectura final mediante `Chem.SDMolSupplier` para verificar que cada registro escrito es un objeto `Mol` válido de RDKit.
+
+La correspondencia exacta entre rúbrica, funciones y resultados se documenta en [`docs/MATRIZ_RUBRICA.md`](docs/MATRIZ_RUBRICA.md).
 
 ## Estructura
 
 ```text
 .
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── actividad2_resuelta_ruben_juarez.py
 ├── environment.yml
 ├── requirements.txt
@@ -46,18 +59,25 @@ El script `actividad2_resuelta_ruben_juarez.py` implementa los dos bloques de la
 │   └── pdb/
 ├── resultados/
 ├── docs/
+│   ├── MATRIZ_RUBRICA.md
 │   └── RESULTADOS_ESPERADOS.md
 └── tests/
     └── test_actividad2.py
 ```
 
-Los archivos `.cif` y los resultados generados se crean durante la ejecución y no es necesario versionarlos.
+Los `.cif`, CSV y SDF generados son reproducibles y se excluyen del control de versiones.
 
 ## Instalación recomendada con Conda
 
 ```bash
 conda env create -f environment.yml
 conda activate mubio07-act2
+```
+
+Alternativamente, con un entorno Python ya creado:
+
+```bash
+python -m pip install -r requirements.txt
 ```
 
 ## Ejecución
@@ -68,7 +88,7 @@ Desde la raíz del repositorio:
 python actividad2_resuelta_ruben_juarez.py
 ```
 
-También pueden personalizarse los directorios:
+Directorios personalizados:
 
 ```bash
 python actividad2_resuelta_ruben_juarez.py \
@@ -77,8 +97,6 @@ python actividad2_resuelta_ruben_juarez.py \
 ```
 
 ## Resultados generados
-
-La ejecución crea:
 
 ```text
 resultados/
@@ -91,25 +109,43 @@ resultados/
 └── heteromoleculas_4OGQ.sdf
 ```
 
-## Pruebas
+## Pruebas y CI
 
-Las pruebas incluidas validan la lógica pura de extracción de datos sin depender de los servicios remotos:
+Las pruebas unitarias se han diseñado para validar la lógica determinista sin depender de que RCSB, UniProt o PubChem estén disponibles en ese instante:
 
 ```bash
+python -m py_compile actividad2_resuelta_ruben_juarez.py
 pytest -q
 ```
 
-## Diseño y decisiones técnicas
+GitHub Actions ejecuta automáticamente esas comprobaciones en cada `push` a `main` y en cada pull request. Las consultas a API públicas se mantienen fuera de CI para evitar falsos negativos por disponibilidad, rate limiting o cambios transitorios de red.
 
-- Las excepciones de una descarga PDB se aíslan por identificador.
-- Se usan reintentos únicamente para errores HTTP transitorios.
-- Se aplica `timeout` a todas las llamadas remotas.
-- El ID Mapping de UniProt se ejecuta mediante el flujo asíncrono oficial.
-- El DataFrame de UniProt conserva **todas las columnas expresamente indicadas por la rúbrica** y añade `Nombre_proteina` y `Secuencia`, porque el texto también exige ambas aunque no aparezcan en la lista de columnas del enunciado.
-- La consulta a PubChem parte primero del **nombre químico extraído del mmCIF**, tal como exige la actividad, y usa el `PDB_comp_id` solo como respaldo.
-- El peso del apartado del cofactor se interpreta como **masa exacta (`ExactMass`)**, no como peso molecular medio.
-- El SDF final se vuelve a abrir con `Chem.SDMolSupplier`; escribir un fichero no se considera suficiente si RDKit no puede releerlo.
+## Decisiones técnicas relevantes
 
-## Nota sobre GitHub
+- Todas las llamadas remotas aplican `timeout`.
+- Los errores HTTP transitorios usan reintentos con backoff; los 404 no se reintentan de forma inútil.
+- El DataFrame de UniProt conserva **todas las columnas indicadas literalmente en el enunciado** y añade `Nombre_proteina` y `Secuencia`, porque el texto también solicita ambos datos.
+- `Peso_molecular` del apartado del cofactor contiene `ExactMass`, ya que el enunciado pide el valor molecular exacto.
+- La información de las heteromoléculas se extrae del propio mmCIF; no se codifica manualmente una lista de compuestos.
+- El archivo SDF no se considera válido solo por haberse escrito: RDKit debe poder releer todos los registros generados.
 
-Para una actividad evaluable es recomendable mantener el repositorio **privado hasta que la calificación sea definitiva**, para evitar que terceros reutilicen el código antes del cierre de la entrega.
+## Controles biológicos de referencia
+
+Las fuentes oficiales permiten comprobar que:
+
+- [RCSB 1TUP](https://www.rcsb.org/structure/1TUP) vincula la proteína p53 humana con UniProtKB `P04637`.
+- [UniProt P04637](https://www.uniprot.org/uniprotkb/P04637/entry) corresponde a `TP53`, está revisada (Swiss-Prot), contiene 393 aa y describe unión a Zn²⁺.
+- [PubChem Zinc(2+)](https://pubchem.ncbi.nlm.nih.gov/compound/32051) corresponde al CID `32051`.
+- [RCSB 4OGQ](https://www.rcsb.org/structure/4OGQ) informa actualmente de 17 ligandos únicos en la unidad asimétrica.
+
+Los valores dinámicos —especialmente fechas de modificación y referencias cruzadas— se recuperan siempre de las API durante la ejecución y no se sustituyen por constantes.
+
+## Entrega académica
+
+La plataforma de evaluación solicita un **script Python `.py`**. El fichero que debe utilizarse para la entrega es:
+
+```text
+actividad2_resuelta_ruben_juarez.py
+```
+
+El resto del repositorio aporta reproducibilidad, validación y trazabilidad, pero no es necesario adjuntarlo si la plataforma limita la entrega a un único script.
